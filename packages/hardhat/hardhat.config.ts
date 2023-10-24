@@ -35,6 +35,9 @@ const config: HardhatUserConfig = {
       default: 0, // by default take the first account as deployer
     },
   },
+  paths: {
+    deploy: "deploy",
+  },
   networks: {
     alfajores: {
       url: "https://alfajores-forno.celo-testnet.org",
