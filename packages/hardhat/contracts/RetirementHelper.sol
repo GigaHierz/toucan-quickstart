@@ -9,6 +9,10 @@ import "./interfaces/IToucanCarbonOffsets.sol";
 contract RetirementHelper {
     using SafeERC20 for IERC20;
 
+    // ADD YOUR FUNCTIONS HERE
+
+    constructor() {}
+
     /**
      * @notice Retire carbon credits choosing a specific project
      * from the specified Toucan token pool. All provided token is consumed for
@@ -29,7 +33,6 @@ contract RetirementHelper {
      * @param _tco2s The addresses of the TCO2 token that the wants to retire
      * @param _amounts The amounts of ERC20 token to swap into Toucan pool
      * token. Full amount will be used for offsetting.
-
      *
      * @return tco2s An array of the TCO2 addresses that were redeemed
      * @return amounts An array of the amounts of each TCO2 that were redeemed

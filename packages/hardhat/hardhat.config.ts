@@ -66,7 +66,7 @@ const config: HardhatUserConfig = {
       forking: {
         url:
           process.env.RPC_ENDPOINT ||
-          "https://polygon-mainnet.g.alchemy.com/v2/4rzRS2MH5LIunV6cejmLhQelv_Vd82rq",
+          "https://rpc.ankr.com/celo/6f24396fed4b972ee581102f612205190998531f9f94ace287da538968911991",
       },
     },
   },
