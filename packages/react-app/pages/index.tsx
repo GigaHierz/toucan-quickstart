@@ -1,17 +1,20 @@
 import { ethers } from "ethers";
 import { FormatTypes, Interface, parseEther } from "ethers/lib/utils.js";
-import RetirementHelper from "../../hardhat/artifacts/contracts/RetirementHelper.sol/RetirementHelper.json";
+import RetirementHelper from "../abis/RetirementHelper.json";
 import ERC20 from "../abis/ERC20.json";
 import { useState } from "react";
 
 export default function RetireProjectById() {
   // Address of the RetirementHelper Contract
-  const retirementHelperAddress = "0xBd07A6D47d83b4fc9C8996B0ab0bEBEfda429b2C";
+  // const retirementHelperAddress = "0xBd07A6D47d83b4fc9C8996B0ab0bEBEfda429b2C"; // Celo
+  const retirementHelperAddress = "0x5Ba296e52C79336012FdCE63fd6743BaDE3D725E"; // Alfajores
 
   // token Addresses, should be removed for production. you can find all addresses in the README file
-  const poolAddress = "0x02De4766C272abc10Bc88c220D214A26960a7e92"; // Celo
-  const tco2Address = "0x96E58418524c01edc7c72dAdDe5FD5C1c82ea89F"; // Celo - TCO2-VCS-1529-2012
+  // const poolAddress = "0x02De4766C272abc10Bc88c220D214A26960a7e92"; // Celo
+  // const tco2Address = "0x96E58418524c01edc7c72dAdDe5FD5C1c82ea89F"; // Celo - TCO2-VCS-1529-2012
 
+  const poolAddress = "0xfb60a08855389F3c0A66b29aB9eFa911ed5cbCB5"; // Alfajores
+  const tco2Address = "0xB7DF0aa693c2aeE70773a3b3d6010a132aDAA07e"; // Alfajores - TCO2-VCS-1529-2012
   // amount
   const amount = parseEther("0.0001");
 
@@ -24,7 +27,11 @@ export default function RetireProjectById() {
   );
 
   // make sure to set your private key in your .env file
-  const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+  const signer = new ethers.Wallet(
+    process.env.PRIVATE_KEY ||
+      "e6a0dd46900e28462425a9a53fdac2bf8149c319703033253cac706aab916c2d",
+    provider
+  );
 
   // create contract for approve function of the ERC20 token
   const iface = new Interface(ERC20.abi);
@@ -43,7 +50,7 @@ export default function RetireProjectById() {
   );
 
   // retire carbon credits
-  const retire = async () => {
+  const retireProjectById = async () => {
     await (await poolContract.approve(retirementHelperAddress, amount)).wait();
 
     console.log(poolAddress, tco2Address, amount);
@@ -68,7 +75,7 @@ export default function RetireProjectById() {
 
   return (
     <div>
-      <button onClick={retire}>offset</button>
+      <button onClick={retireProjectById}>offset</button>
       {tx && <div>{`Transaction : ${tx}`}</div>}
     </div>
   );
