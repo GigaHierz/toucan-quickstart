@@ -3,6 +3,7 @@ import { FormatTypes, Interface, parseEther } from "ethers/lib/utils.js";
 import RetirementHelper from "../abis/RetirementHelper.json";
 import ERC20 from "../abis/ERC20.json";
 import { useState } from "react";
+import { useEthersProvider, useEthersSigner } from "@/utils/ethers";
 
 export default function RetireProjectById() {
   // Address of the RetirementHelper Contract
@@ -22,16 +23,10 @@ export default function RetireProjectById() {
   const [tx, setTx] = useState("");
 
   // ethers signer and provider
-  const provider = new ethers.providers.JsonRpcProvider(
-    "https://rpc.ankr.com/celo"
-  );
+  const provider = useEthersProvider();
 
   // make sure to set your private key in your .env file
-  const signer = new ethers.Wallet(
-    process.env.PRIVATE_KEY ||
-      "e6a0dd46900e28462425a9a53fdac2bf8149c319703033253cac706aab916c2d",
-    provider
-  );
+  const signer = useEthersSigner();
 
   // create contract for approve function of the ERC20 token
   const iface = new Interface(ERC20.abi);
@@ -52,8 +47,6 @@ export default function RetireProjectById() {
   // retire carbon credits
   const retireProjectById = async () => {
     await (await poolContract.approve(retirementHelperAddress, amount)).wait();
-
-    console.log(poolAddress, tco2Address, amount);
 
     // call retirementHelper function to retire carbon credits of a specific project
     const tx = await retirementHelper.retireSpecificProject(
