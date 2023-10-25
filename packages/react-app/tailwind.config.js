@@ -1,9 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -18,7 +17,7 @@ module.exports = {
         "fig": "#1E002B",
         /** functional */
         "snow": "#FFFFFF",
-        "onyx": "#000000",
+        "onyx": "#CCCCCC",
         "success": "#329F3B",
         "error": "#E70532",
         "disabled": "#9B9B9B",
