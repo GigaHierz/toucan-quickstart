@@ -43,9 +43,6 @@ contract RetirementHelper {
         address[] memory _tco2s,
         uint256[] memory _amounts
     ) public returns (address[] memory tco2s, uint256[] memory amounts) {
-        // approve contract to redeem tokens
-        IERC20(_poolToken).approve(address(this), _amounts[0]);
-
         // deposit pool token from user to this contract
         IERC20(_poolToken).safeTransferFrom(
             msg.sender,
@@ -60,7 +57,7 @@ contract RetirementHelper {
         (tco2s, amounts) = redeemProject(_poolToken, tco2s, amounts);
 
         // retire the TCO2s to achieve offset
-        retire(tco2s, amounts);
+        retireProjects(tco2s, amounts);
     }
 
     /**
@@ -100,11 +97,11 @@ contract RetirementHelper {
 
     /**
      * @notice Retire the specified TCO2 tokens.
-     * @param _tco2s The addresses of the TCO2 token that the wants to retire
+     * @param _tco2s The addresses of the TCO2 token that the user wants to retire
      * @param _amounts The amounts of ERC20 token to swap into Toucan pool
      * TCO2 addresses
      */
-    function retire(
+    function retireProjects(
         address[] memory _tco2s,
         uint256[] memory _amounts
     ) internal {
@@ -118,7 +115,6 @@ contract RetirementHelper {
                 continue;
             }
             require(
-                // we are subtrackting the
                 IERC20(_tco2s[i]).balanceOf(address(this)) >= _amounts[i],
                 "Insufficient TCO2 balance"
             );
