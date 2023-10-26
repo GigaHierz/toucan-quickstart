@@ -4,12 +4,11 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./interfaces/IToucanPoolToken.sol";
 import "./interfaces/IToucanCarbonOffsets.sol";
+import "./Swapper.sol";
 
 // Uniswap router
 contract RetirementHelper {
     using SafeERC20 for IERC20;
-
-    // ADD YOUR FUNCTIONS HERE
 
     constructor() {}
 
@@ -21,9 +20,44 @@ contract RetirementHelper {
      * This function:
      * 1. Redeems the pool token for the choosen TCO2 tokens.
      * 2. Retires the TCO2 tokens.
-     *
      * Note: The client must approve the ERC20 token that is sent to the contract.
+     * @dev When choosing to redeeming pool tokens for a specific
+     * TCO2s there are fees which will be calculated in the reddem function.
+     * You can learn more about Toucan's Protocol fee in their
+     * docs: https://docs.toucan.earth/toucan/pool/protocol-fees
+     * @param _amount The amounts of ERC20 token to swap into Toucan pool
+     * @param _path an Array of token addresses that describe the swap path.
+     * @param _account The address we want to relate the retirement to
+     * @param _dexRouter The address of the DEX Router
+     * @return tco2s An array of the TCO2 addresses that were redeemed
+     * @return amounts An array of the amounts of each TCO2 that were redeemed
+     */
+
+    function retireFromAddress(
+        uint256 _amount,
+        address[] memory _path,
+        address _account,
+        address _dexRouter
+    ) public returns (address[] memory tco2s, uint256[] memory amounts) {
+        // deposit pool token from user to this contract
+        Swapper(_dexRouter).swapExactInToken(_path, _amount);
+
+        // redeem BCT / NCT for a sepcific TCO2
+        (tco2s, amounts) = autoRedeem(_path[0], _amount);
+
+        // retire the TCO2s to achieve offset
+        retireFrom(tco2s, amounts, _account);
+    }
+
+    /**
+     * @notice Retire carbon credits choosing a specific project
+     * from the specified Toucan token pool. All provided token is consumed for
+     * retirement.
      *
+     * This function:
+     * 1. Redeems the pool token for the choosen TCO2 tokens.
+     * 2. Retires the TCO2 tokens.
+     * Note: The client must approve the ERC20 token that is sent to the contract.
      * @dev When choosing to redeeming pool tokens for a specific
      * TCO2s there are fees which will be calculated in the reddem function.
      * You can learn more about Toucan's Protocol fee in their
@@ -33,7 +67,6 @@ contract RetirementHelper {
      * @param _tco2s The addresses of the TCO2 token that the wants to retire
      * @param _amounts The amounts of ERC20 token to swap into Toucan pool
      * token. Full amount will be used for offsetting.
-     *
      * @return tco2s An array of the TCO2 addresses that were redeemed
      * @return amounts An array of the amounts of each TCO2 that were redeemed
      */
@@ -58,6 +91,76 @@ contract RetirementHelper {
 
         // retire the TCO2s to achieve offset
         retireProjects(tco2s, amounts);
+    }
+
+    /**
+     * @notice Retire carbon credits choosing a specific project
+     * from the specified Toucan token pool. All provided token is consumed for
+     * retirement.
+     *
+     * This function:
+     * 1. Redeems the pool token for the choosen TCO2 tokens.
+     * 2. Retires the TCO2 tokens.
+     * Note: The client must approve the ERC20 token that is sent to the contract.
+     * @dev When choosing to redeeming pool tokens for a specific
+     * TCO2s there are fees which will be calculated in the reddem function.
+     * You can learn more about Toucan's Protocol fee in their
+     * docs: https://docs.toucan.earth/toucan/pool/protocol-fees
+     * @param _poolToken The address of the Toucan pool token that the
+     * user wants to use, e.g., NCT or BCT
+     * @param _tco2s The addresses of the TCO2 token that the wants to retire
+     * @param _amounts The amount of ERC20 token to swap into Toucan pool
+     * token. Full amount will be used for offsetting.
+     *
+     * @return tco2s An array of the TCO2 addresses that were redeemed
+     * @return amounts An array of the amounts of each TCO2 that were redeemed
+     */
+
+    function retireSpecificProject(
+        address _poolToken,
+        address[] memory _tco2s,
+        uint256[] memory _amounts,
+        address _account
+    ) public returns (address[] memory tco2s, uint256[] memory amounts) {
+        // deposit pool token from user to this contract
+        IERC20(_poolToken).safeTransferFrom(
+            msg.sender,
+            address(this),
+            _amounts[0]
+        );
+
+        tco2s = _tco2s;
+        amounts = _amounts;
+
+        // redeem BCT / NCT for a sepcific TCO2
+        (tco2s, amounts) = redeemProject(_poolToken, tco2s, amounts);
+
+        // retire the TCO2s to achieve offset
+        retireFrom(tco2s, amounts, _account);
+    }
+
+    /**
+     * @notice Redeems the specified amount of NCT / BCT for TCO2.
+     * @dev Needs to be approved on the client side
+     * @param _fromToken Could be the address of NCT
+     * @param _amount Amount to redeem
+     * @return tco2s An array of the TCO2 addresses that were redeemed
+     * @return amounts An array of the amounts of each TCO2 that were redeemed
+     */
+    function autoRedeem(
+        address _fromToken,
+        uint256 _amount
+    ) public returns (address[] memory tco2s, uint256[] memory amounts) {
+        require(
+            IERC20(_fromToken).balanceOf(address(this)) >= _amount,
+            "Insufficient NCT/BCT balance"
+        );
+
+        // instantiate pool token (NCT)
+        IToucanPoolToken PoolTokenImplementation = IToucanPoolToken(_fromToken);
+
+        // auto redeem pool token for TCO2; will transfer automatically picked TCO2 to this contract
+        (tco2s, amounts) = PoolTokenImplementation.redeemAuto2(_amount);
     }
 
     /**
@@ -120,6 +223,36 @@ contract RetirementHelper {
             );
 
             IToucanCarbonOffsets(_tco2s[i]).retire(_amounts[i]);
+        }
+    }
+
+    /**
+     * @notice Retire the specified TCO2 tokens from another address.
+     * @param _tco2s The addresses of the TCO2 token that the user wants to retire
+     * @param _amounts The amounts of ERC20 token to swap into Toucan pool
+     * @param _account The address we want to relate the retirement to
+     * TCO2 addresses
+     */
+    function retireFrom(
+        address[] memory _tco2s,
+        uint256[] memory _amounts,
+        address _account
+    ) internal {
+        uint256 tco2sLen = _tco2s.length;
+        require(tco2sLen != 0, "Array empty");
+
+        require(tco2sLen == _amounts.length, "Arrays unequal");
+
+        for (uint i = 0; i < tco2sLen; i++) {
+            if (_amounts[i] == 0) {
+                continue;
+            }
+            require(
+                IERC20(_tco2s[i]).balanceOf(address(this)) >= _amounts[i],
+                "Insufficient TCO2 balance"
+            );
+
+            IToucanCarbonOffsets(_tco2s[i]).retireFrom(_account, _amounts[i]);
         }
     }
 }
