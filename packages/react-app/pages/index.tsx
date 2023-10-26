@@ -6,16 +6,18 @@ import { useState } from "react";
 import { useEthersProvider, useEthersSigner } from "@/utils/ethers";
 
 export default function RetireProjectById() {
-  // Address of the RetirementHelper Contract
-  // const retirementHelperAddress = "0xBd07A6D47d83b4fc9C8996B0ab0bEBEfda429b2C"; // Celo
-  const retirementHelperAddress = "0x5Ba296e52C79336012FdCE63fd6743BaDE3D725E"; // Alfajores
-
   // token Addresses, should be removed for production. you can find all addresses in the README file
+  // const retirementHelperAddress = "0xBd07A6D47d83b4fc9C8996B0ab0bEBEfda429b2C"; // Celo
   // const poolAddress = "0x02De4766C272abc10Bc88c220D214A26960a7e92"; // Celo
   // const tco2Address = "0x96E58418524c01edc7c72dAdDe5FD5C1c82ea89F"; // Celo - TCO2-VCS-1529-2012
 
-  const poolAddress = "0xfb60a08855389F3c0A66b29aB9eFa911ed5cbCB5"; // Alfajores
-  const tco2Address = "0xB7DF0aa693c2aeE70773a3b3d6010a132aDAA07e"; // Alfajores - TCO2-VCS-1529-2012
+  // const retirementHelperAddress = "0x5Ba296e52C79336012FdCE63fd6743BaDE3D725E"; // Alfajores
+  // const poolAddress = "0xfb60a08855389F3c0A66b29aB9eFa911ed5cbCB5"; // Alfajores
+  // const tco2Address = "0xB7DF0aa693c2aeE70773a3b3d6010a132aDAA07e"; // Alfajores - TCO2-VCS-1529-2012
+
+  const retirementHelperAddress = "0x9045E716A42D63c4DcfFaa9e63DbE3b088036469"; // - Mumbai
+  const poolAddress = "0x7beCBA11618Ca63Ead5605DE235f6dD3b25c530E"; // Mumbai - NCT
+  const tco2Address = "0xF7e61e0084287890E35e46dc7e077d7E5870Ae27"; // Mumbai - TCO2-VCS-1529-2012
   // amount
   const amount = parseEther("0.0001");
 
@@ -24,8 +26,6 @@ export default function RetireProjectById() {
 
   // ethers signer and provider
   const provider = useEthersProvider();
-
-  // make sure to set your private key in your .env file
   const signer = useEthersSigner();
 
   // create contract for approve function of the ERC20 token
