@@ -1,6 +1,7 @@
 node_modules
 .env
 packages/*/.env
+cache
 
 # IntelliJ project files
 *.iml
@@ -39,3 +40,5 @@ nb-configuration.xml
 *.swp
 
 PROPOSAL.md
+
+

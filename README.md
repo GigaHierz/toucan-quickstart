@@ -2,7 +2,8 @@
 
 This repository serves as a quickstart to interact with Toucan's contracts.
 
-If you want to implement paying for the retirement with tokens like cUSD, you can add the [SimpleSwapper](https://docs.uniswap.org/contracts/v3/guides/swaps/single-swaps) from [Uniswap](https://uniswap.org/developers). For testing the swap, we recommend to fork the mainnet, as there are no pools with Toucan tokens deployed. You can do that by running `yarn run fork-mainnet`.
+If you want to implement paying for the retirement with tokens like cUSD, you can add use `Swapper.sol` which is based on Uniswap V2 or you use the [SimpleSwapper](https://docs.uniswap.org/contracts/v3/guides/swaps/single-swaps) (Uniswap V3) from [Uniswap](https://uniswap.org/developers). For testing the swap, we recommend to fork the mainnet, as there are no pools with Toucan tokens deployed. You can do that by running `yarn run fork-mainnet`.
+
 Check the OffsetHelper for examples. It uses Uniswap Router V2.
 
 This repository has been build with the [Celo-Composer](https://github.com/celo-org/celo-composer) and it comes with
@@ -14,6 +15,12 @@ This repository has been build with the [Celo-Composer](https://github.com/celo-
 Find a full tutorial to the example contract `RetirementHelper.sol` below.
 
 ## Setup & Installation
+
+Create a fork of the Toucan Quickstarter, and let's get started with cloning it to your local machine.
+
+```bash
+git clone git@github.com:GigaHierz/toucan-quickstart.git
+```
 
 ### Smart Contracts
 
