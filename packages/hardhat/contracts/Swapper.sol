@@ -12,11 +12,7 @@ contract Swapper {
     address public dexRouterAddress;
 
     /**
-     * @notice Contract constructor. Should specify arrays of ERC20 symbols and
-     * addresses that can used by the contract.
-     * @dev See `isEligible()` for a list of tokens that can be used in the
-     * contract. These can be modified after deployment by the contract owner
-     * using `setEligibleTokenAddress()` and `deleteEligibleTokenAddress()`.
+     * @notice Contract constructor. Takes the DEX router address
      * @param _dexRouterAddress The address of the DEX (Uniswap V2) used to swap tokens
      */
     constructor(address _dexRouterAddress) {
@@ -48,13 +44,14 @@ contract Swapper {
         IERC20(_path[0]).approve(dexRouterAddress, amountIn);
 
         // swap
-        uint256[] memory amounts = dexRouter().swapTokensForExactTokens(
-            _toAmount,
-            amountIn, // max. input amount
-            _path,
-            address(this),
-            block.timestamp
-        );
+        uint256[] memory amounts = IUniswapV2Router02(dexRouterAddress)
+            .swapTokensForExactTokens(
+                _toAmount,
+                amountIn, // max. input amount
+                _path,
+                address(this),
+                block.timestamp
+            );
 
         // remove remaining approval if less input token was consumed
         if (amounts[0] < amountIn) {
@@ -68,7 +65,6 @@ contract Swapper {
      * @dev Needs to be approved on the client side.
      * @param _path an Array of token addresses that describe the swap path.
      * @param _fromAmount The amount of ERC20 token to swap
-     *  e.g., NCT
      * @return amountOut Resulting amount of pool token that got acquired for the
      * swapped ERC20 tokens.
      */
@@ -89,13 +85,14 @@ contract Swapper {
         IERC20(_path[0]).approve(dexRouterAddress, _fromAmount);
 
         // swap
-        uint256[] memory amounts = dexRouter().swapExactTokensForTokens(
-            _fromAmount,
-            0, // min. output amount
-            _path,
-            address(this),
-            block.timestamp
-        );
+        uint256[] memory amounts = IUniswapV2Router02(dexRouterAddress)
+            .swapExactTokensForTokens(
+                _fromAmount,
+                0, // min. output amount
+                _path,
+                address(this),
+                block.timestamp
+            );
         amountOut = amounts[len - 1];
     }
 
@@ -109,15 +106,12 @@ contract Swapper {
      * example,  e.g., NCT.
      *
      * @param _path an Array of token addresses that describe the swap path.
-     * @param _poolToken The address of the pool token to swap for,
-     *  e.g., NCT
      * @param _toAmount The desired amount of pool token to receive
      * @return amountIn The amount of the ERC20 token required in order to
      * swap for the specified amount of the pool token
      */
     function calculateNeededTokenAmount(
         address[] memory _path,
-        address _poolToken,
         uint256 _toAmount
     ) public view returns (uint256 amountIn) {
         uint256[] memory amounts = calculateExactOutSwap(_path, _toAmount);
@@ -151,7 +145,10 @@ contract Swapper {
         // create path & calculate amounts
         uint256 len = _path.length;
 
-        amounts = dexRouter().getAmountsIn(_toAmount, _path);
+        amounts = IUniswapV2Router02(dexRouterAddress).getAmountsIn(
+            _toAmount,
+            _path
+        );
 
         // sanity check arrays
         require(len == amounts.length, "Arrays unequal");
@@ -165,14 +162,13 @@ contract Swapper {
         // create path & calculate amounts
         uint256 len = _path.length;
 
-        amounts = dexRouter().getAmountsOut(_fromAmount, _path);
+        amounts = IUniswapV2Router02(dexRouterAddress).getAmountsOut(
+            _fromAmount,
+            _path
+        );
 
         // sanity check arrays
         require(len == amounts.length, "Arrays unequal");
         require(_fromAmount == amounts[0], "Input amount mismatch");
-    }
-
-    function dexRouter() internal view returns (IUniswapV2Router02) {
-        return IUniswapV2Router02(dexRouterAddress);
     }
 }
